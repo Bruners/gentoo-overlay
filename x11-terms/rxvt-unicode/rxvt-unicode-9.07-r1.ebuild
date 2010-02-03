@@ -52,7 +52,7 @@ src_prepare() {
 	use wcwidth && epatch doc/wcwidth.patch
 
 	# apply hints patch
-	use hints && epatch "${FILESDIR}"/hints.diff
+	use hints && epatch "${FILESDIR}"/hints.patch
 	
 	# bug #240165
 	epatch "${FILESDIR}"/${PN}-9.06-no-urgency-if-focused.diff
