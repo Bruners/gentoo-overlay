@@ -219,9 +219,11 @@ src_prepare() {
 
 	# Upstream will support 2.6.32 Linux kernel from next version
 	# so this (and patch in FILESDIR) will be removed afterwards
-	if kernel_is ge 2 6 32; then
-		epatch "${FILESDIR}"/kernel/2.6.32-${PV}-fix_compilation.patch
-	fi
+	
+	# This is no longer needed in 10.1
+	#if kernel_is ge 2 6 32; then
+	#	epatch "${FILESDIR}"/kernel/2.6.32-${PV}-fix_compilation.patch
+	#fi
 
 	# All kernel options for prepare are ment to be in here
 	if use modules; then
