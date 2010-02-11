@@ -17,7 +17,7 @@ else
 	SRC_URI="https://launchpad.net/ubuntu/karmic/+source/fglrx-installer/2:${PV}-0ubuntu1/+files/fglrx-installer_${PV}.orig.tar.gz"
 	FOLDER_PREFIX=""
 fi
-IUSE="debug +modules multilib"
+IUSE="qt4 debug +modules multilib"
 
 LICENSE="AMD GPL-2 QPL-1.0 as-is"
 KEYWORDS="amd64 x86"
@@ -33,6 +33,7 @@ RDEPEND="
 	>=x11-base/xorg-server-1.5.3-r7
 	x11-libs/libXinerama
 	x11-libs/libXrandr
+	qt4? ( >=x11-libs/qt-gui-4  )
 	multilib? ( app-emulation/emul-linux-x86-xlibs )
 "
 
@@ -170,6 +171,11 @@ pkg_setup() {
 	MODULE_DIR="${S}/${FOLDER_PREFIX}/lib/modules/fglrx/build_mod"
 	# xorg folder
 	BASE_DIR="${S}/x740"
+	if ! use qt4 ; then
+		elog
+		ewarn "WARNING: amdcccle won't work without qt4 libs, to be able to use it enable qt4"
+		einfo
+	fi
 
 	# amd64/x86
 	if use amd64 ; then
