@@ -219,7 +219,7 @@ src_prepare() {
 	# 2.6.33 kernel support
 	#epatch "${FILESDIR}"/ati-drivers-2.6.33.patch
 	# Fix a known compilation error
-	epatch "${FILESDIR}"/ati-drivers-fix_compilation-bug-297322.patch
+	#epatch "${FILESDIR}"/ati-drivers-fix_compilation-bug-297322.patch
 
 	# These are the userspace utilities that we also have source for.
 	# We rebuild these later.
