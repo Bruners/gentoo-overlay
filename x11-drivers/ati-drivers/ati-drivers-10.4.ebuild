@@ -1,22 +1,18 @@
 # Copyright 1999-2010 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/x11-drivers/ati-drivers/ati-drivers-10.2.ebuild,v 1.2 2010/02/28 17:31:48 lxnay Exp $
+# $Header: /var/cvsroot/gentoo-x86/x11-drivers/ati-drivers/ati-drivers-8.721.ebuild,v 1.1 2010/03/21 12:42:44 lu_zero Exp $
 
 EAPI="2"
 
 inherit eutils multilib linux-mod toolchain-funcs versionator
 
+REAL_PV="8.721"
+
 DESCRIPTION="Ati precompiled drivers for r600 (HD Series) and newer chipsets"
 HOMEPAGE="http://www.ati.com"
-# 8.ble will be used for beta releases.
-if [[ $(get_major_version) -gt 8 ]]; then
-	ATI_URL="https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/"
-	SRC_URI="${ATI_URL}/ati-driver-installer-${PV/./-}-x86.x86_64.run"
-	FOLDER_PREFIX="common/"
-else
-	SRC_URI="https://launchpad.net/ubuntu/karmic/+source/fglrx-installer/2:${PV}-0ubuntu1/+files/fglrx-installer_${PV}.orig.tar.gz"
-	FOLDER_PREFIX=""
-fi
+ATI_URL="https://a248.e.akamai.net/f/674/9206/0/www2.ati.com/drivers/linux/"
+SRC_URI="${ATI_URL}/ati-driver-installer-${PV/./-}-x86.x86_64.run"
+FOLDER_PREFIX="common/"
 IUSE="debug +modules multilib"
 
 LICENSE="AMD GPL-2 QPL-1.0 as-is"
@@ -30,7 +26,8 @@ RDEPEND="
 	>=app-admin/eselect-opengl-1.0.7
 	sys-power/acpid
 	x11-apps/xauth
-	>=x11-base/xorg-server-1.5.3-r7
+	>=x11-base/xorg-server-1.7
+	!<x11-base/xorg-server-1.7
 	x11-libs/libXinerama
 	x11-libs/libXrandr
 	multilib? ( app-emulation/emul-linux-x86-xlibs )
@@ -45,7 +42,7 @@ DEPEND="${RDEPEND}
 
 EMULTILIB_PKG="true"
 
-S="${WORKDIR}"
+S="${WORKDIR}/fglrx-installer-${REAL_PV}"
 
 # QA Silencing
 QA_TEXTRELS="
@@ -169,7 +166,7 @@ pkg_setup() {
 	# Define module dir.
 	MODULE_DIR="${S}/${FOLDER_PREFIX}/lib/modules/fglrx/build_mod"
 	# xorg folder
-	BASE_DIR="${S}/x740"
+	BASE_DIR="${S}/x750"
 
 	# amd64/x86
 	if use amd64 ; then
@@ -204,14 +201,7 @@ pkg_setup() {
 }
 
 src_unpack() {
-	if [[ $(get_major_version) -gt 8 ]]; then
-		# Switching to a standard way to extract the files since otherwise no signature file
-		# would be created
-		local src="${DISTDIR}/${A}"
-		sh "${src}" --extract "${S}"  2&>1 /dev/null
-	else
-		unpack ${A}
-	fi
+	unpack ${A}
 }
 
 src_prepare() {
@@ -227,9 +217,9 @@ src_prepare() {
 	fi
 
 	# 2.6.33 kernel support
-	#epatch "${FILESDIR}"/ati-drivers-2.6.33.patch
+	epatch "${FILESDIR}"/ati-drivers-2.6.33.patch
 	# Fix a known compilation error
-	#epatch "${FILESDIR}"/ati-drivers-fix_compilation-bug-297322.patch
+	epatch "${FILESDIR}"/ati-drivers-fix_compilation-bug-297322.patch
 
 	# These are the userspace utilities that we also have source for.
 	# We rebuild these later.
@@ -371,7 +361,7 @@ src_install() {
 	exeinto /usr/$(get_libdir)/xorg/modules/linux
 	doexe "${MY_BASE_DIR}"/usr/X11R6/${PKG_LIBDIR}/modules/linux/libfglrxdrm.so || die
 	exeinto /usr/$(get_libdir)/xorg/modules
-	doexe "${MY_BASE_DIR}"/usr/X11R6/${PKG_LIBDIR}/modules/{esut.a,glesx.so,amdxmm.so} || die
+	doexe "${MY_BASE_DIR}"/usr/X11R6/${PKG_LIBDIR}/modules/{glesx.so,amdxmm.so} || die
 
 	# Arch-specific files.
 	# (s)bin.
