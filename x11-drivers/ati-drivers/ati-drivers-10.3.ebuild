@@ -24,7 +24,7 @@ KEYWORDS="~amd64 ~x86"
 SLOT="1"
 
 RDEPEND="
-	!>=x11-base/xorg-server-1.8.0
+	!>=x11-base/xorg-server-1.7.0
 	!x11-drivers/ati-drivers:0
 	!x11-apps/ati-drivers-extra
 	>=app-admin/eselect-opengl-1.0.7
@@ -227,9 +227,9 @@ src_prepare() {
 	fi
 
 	# 2.6.33 kernel support
-	#epatch "${FILESDIR}"/ati-drivers-2.6.33.patch
+	epatch "${FILESDIR}"/ati-drivers-2.6.33.patch
 	# Fix a known compilation error
-	#epatch "${FILESDIR}"/ati-drivers-fix_compilation-bug-297322.patch
+	epatch "${FILESDIR}"/ati-drivers-fix_compilation-bug-297322.patch
 
 	# These are the userspace utilities that we also have source for.
 	# We rebuild these later.
