@@ -1,6 +1,8 @@
 # ChangeLog for media-sound/mangler
 # Copyright 1999-2010 Gentoo Foundation; Distributed under the GPL v2
 # $Header: $
+  05 May 2010; Lasse Brun <bruners@gmail.com> mangler-9999.ebuild:
+  Add useflags and dependencies for g15 support
 
   08 Mar 2010; Ben de Groot <yngwin@gentoo.org> mangler-9999.ebuild:
   Add useflags for celt, gsm, speex codecs, and for mpd, nowplaying and xosd
