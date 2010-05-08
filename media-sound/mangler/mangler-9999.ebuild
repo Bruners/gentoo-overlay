@@ -12,12 +12,13 @@ HOMEPAGE="http://www.mangler.org/"
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS=""
-IUSE="alsa celt g15 gsm mpd nowplaying pulseaudio speex xosd"
+IUSE="alsa espeak celt g15 gsm mpd nowplaying pulseaudio speex xosd"
 
 RDEPEND="dev-cpp/gtkmm:2.4
 	gnome-base/librsvg
 	alsa? ( media-libs/alsa-lib )
 	celt? ( >=media-libs/celt-0.7.1 )
+	espeak? ( app-accessibility/espeak )
 	g15? ( app-misc/g15daemon )
 	gsm? ( media-sound/gsm )
 	mpd? ( media-libs/libmpdclient )
@@ -39,6 +40,7 @@ src_configure() {
 	econf $(use_with alsa) \
 		$(use_with pulseaudio) \
 		$(use_with oss) \
+		$(use_enable espeak) \
 		$(use_enable celt) \
 		$(use_enable g15) \
 		$(use_enable gsm) \
