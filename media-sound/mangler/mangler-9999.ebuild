@@ -23,11 +23,10 @@ RDEPEND="dev-cpp/gtkmm:2.4
 	gsm? ( media-sound/gsm )
 	mpd? ( media-libs/libmpdclient )
 	nowplaying? ( >=dev-libs/dbus-glib-0.80 )
-	oss? ( media-sound/oss )
+	oss? ( media-sound/oss || media-sound/oss-devel )
 	pulseaudio? ( media-sound/pulseaudio )
 	speex? ( media-libs/speex )
 	xosd? ( x11-libs/xosd )"
-
 DEPEND="${RDEPEND}
 	dev-util/pkgconfig
 	>=sys-devel/autoconf-2.65"
@@ -51,3 +50,4 @@ src_configure() {
 src_install() {
 	emake DESTDIR="${D}" install || die
 }
+
