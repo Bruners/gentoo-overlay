@@ -99,7 +99,7 @@ src_unpack() {
 
 src_prepare() {
 	epatch "${FILESDIR}"/${PN}-1.1.15-winegcc.patch #260726
-	epatch "${FILESDIR}"/sc2-login.diff
+	#epatch "${FILESDIR}"/sc2-login.diff
 	epatch "${FILESDIR}"/acceptex.diff
 	epatch_user #282735
 	sed -i '/^UPDATE_DESKTOP_DATABASE/s:=.*:=true:' tools/Makefile.in || die

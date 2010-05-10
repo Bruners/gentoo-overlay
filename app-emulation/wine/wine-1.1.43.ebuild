@@ -106,7 +106,7 @@ src_prepare() {
 		EPATCH_OPTS=-p1 epatch `pulse_patches "${DISTDIR}"`
 		eautoreconf
 	fi
-	epatch "${FILESDIR}"/sc2-login.diff
+	#epatch "${FILESDIR}"/sc2-login.diff
 	epatch "${FILESDIR}"/acceptex.diff
 	epatch "${FILESDIR}"/${PN}-1.1.15-winegcc.patch #260726
 	epatch_user #282735
