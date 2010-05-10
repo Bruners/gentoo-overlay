@@ -23,7 +23,7 @@ RDEPEND="dev-cpp/gtkmm:2.4
 	gsm? ( media-sound/gsm )
 	mpd? ( media-libs/libmpdclient )
 	nowplaying? ( >=dev-libs/dbus-glib-0.80 )
-	oss? ( media-sound/oss || media-sound/oss-devel )
+	oss? || ( media-sound/oss media-sound/oss-devel )
 	pulseaudio? ( media-sound/pulseaudio )
 	speex? ( media-libs/speex )
 	xosd? ( x11-libs/xosd )"
