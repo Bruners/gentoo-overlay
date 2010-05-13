@@ -1,0 +1,318 @@
+diff -r -u -p a/server/async.c b/server/async.c
+--- a/server/async.c	2009-12-04 19:05:35.000000000 +0100
++++ b/server/async.c	2009-12-11 14:11:41.328610337 +0100
+@@ -101,9 +101,9 @@ static const struct object_ops async_que
+ };
+ 
+ 
+-static inline void async_reselect( struct async *async )
++static inline void async_event( struct async *async, int finished )
+ {
+-    if (async->queue->fd) fd_reselect_async( async->queue->fd, async->queue );
++    if (async->queue->fd) fd_async_event( async->queue->fd, async->queue, async, async->status, finished );
+ }
+ 
+ static void async_dump( struct object *obj, int verbose )
+@@ -119,7 +119,7 @@ static void async_destroy( struct object
+     assert( obj->ops == &async_ops );
+ 
+     list_remove( &async->queue_entry );
+-    async_reselect( async );
++    async_event( async, TRUE );
+ 
+     if (async->timeout) remove_timeout_user( async->timeout );
+     if (async->event) release_object( async->event );
+@@ -157,7 +157,7 @@ void async_terminate( struct async *asyn
+     data.async_io.status = status;
+     thread_queue_apc( async->thread, &async->obj, &data );
+     async->status = status;
+-    async_reselect( async );
++    async_event( async, FALSE );
+     release_object( async );  /* so that it gets destroyed when the async is done */
+ }
+ 
+@@ -251,7 +251,7 @@ void async_set_result( struct object *ob
+         if (status != STATUS_ALERTED)  /* it was terminated in the meantime */
+             async_terminate( async, status );
+         else
+-            async_reselect( async );
++            async_event( async, FALSE );
+     }
+     else
+     {
+diff -r -u -p a/server/change.c b/server/change.c
+--- a/server/change.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/change.c	2009-12-11 14:11:41.332355716 +0100
+@@ -202,7 +202,7 @@ static const struct fd_ops dir_fd_ops =
+     default_fd_removable,        /* removable */
+     default_fd_ioctl,            /* ioctl */
+     default_fd_queue_async,      /* queue_async */
+-    default_fd_reselect_async,   /* reselect_async */
++    default_fd_async_event,      /* async_event */
+     default_fd_cancel_async      /* cancel_async */
+ };
+ 
+@@ -618,8 +618,8 @@ static const struct fd_ops inotify_fd_op
+     NULL,                        /* removable */
+     NULL,                        /* ioctl */
+     NULL,                        /* queue_async */
+-    NULL,                        /* reselect_async */
+-    NULL,                        /* cancel_async */
++    NULL,                        /* async_event */
++    NULL                         /* cancel_async */
+ };
+ 
+ static int inotify_get_poll_events( struct fd *fd )
+diff -r -u -p a/server/device.c b/server/device.c
+--- a/server/device.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/device.c	2009-12-11 14:11:41.332355716 +0100
+@@ -156,7 +156,7 @@ static const struct fd_ops device_fd_ops
+     default_fd_removable,             /* removable */
+     device_ioctl,                     /* ioctl */
+     default_fd_queue_async,           /* queue_async */
+-    default_fd_reselect_async,        /* reselect_async */
++    default_fd_async_event,           /* async_event */
+     default_fd_cancel_async           /* cancel_async */
+ };
+ 
+diff -r -u -p a/server/fd.c b/server/fd.c
+--- a/server/fd.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/fd.c	2009-12-11 14:11:41.335706561 +0100
+@@ -2040,9 +2040,9 @@ void fd_async_wake_up( struct fd *fd, in
+     }
+ }
+ 
+-void fd_reselect_async( struct fd *fd, struct async_queue *queue )
++void fd_async_event( struct fd *fd, struct async_queue *queue, struct async *async, int status, int finished )
+ {
+-    fd->fd_ops->reselect_async( fd, queue );
++    fd->fd_ops->async_event( fd, queue, async, status, finished );
+ }
+ 
+ void no_fd_queue_async( struct fd *fd, const async_data_t *data, int type, int count )
+@@ -2061,8 +2061,8 @@ void default_fd_queue_async( struct fd *
+     }
+ }
+ 
+-/* default reselect_async() fd routine */
+-void default_fd_reselect_async( struct fd *fd, struct async_queue *queue )
++/* default async_event() fd routine */
++void default_fd_async_event( struct fd *fd, struct async_queue *queue, struct async *async, int status, int finished )
+ {
+     if (queue != fd->wait_q)
+     {
+diff -r -u -p a/server/file.c b/server/file.c
+--- a/server/file.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/file.c	2009-12-11 14:11:41.335706561 +0100
+@@ -105,7 +105,7 @@ static const struct fd_ops file_fd_ops =
+     default_fd_removable,         /* removable */
+     default_fd_ioctl,             /* ioctl */
+     default_fd_queue_async,       /* queue_async */
+-    default_fd_reselect_async,    /* reselect_async */
++    default_fd_async_event,       /* async_event */
+     default_fd_cancel_async       /* cancel_async */
+ };
+ 
+diff -r -u -p a/server/file.h b/server/file.h
+--- a/server/file.h	2009-12-11 14:09:05.000000000 +0100
++++ b/server/file.h	2009-12-11 14:13:21.895679169 +0100
+@@ -25,6 +25,7 @@
+ 
+ struct fd;
+ struct async_queue;
++struct async;
+ struct completion;
+ 
+ /* operations valid on file descriptor objects */
+@@ -45,8 +46,8 @@ struct fd_ops
+                           const void *data, data_size_t size);
+     /* queue an async operation */
+     void (*queue_async)(struct fd *, const async_data_t *data, int type, int count);
+-    /* selected events for async i/o need an update */
+-    void (*reselect_async)( struct fd *, struct async_queue *queue );
++    /* an async request changed state (or being destroyed) */
++    void (*async_event)(struct fd *, struct async_queue *queue, struct async *async, int status, int finished);
+     /* cancel an async operation */
+     void (*cancel_async)(struct fd *, struct process *process, struct thread *thread, client_ptr_t iosb);
+ };
+@@ -83,14 +84,14 @@ extern int default_fd_get_poll_events( s
+ extern void default_poll_event( struct fd *fd, int event );
+ extern struct async *fd_queue_async( struct fd *fd, const async_data_t *data, int type );
+ extern void fd_async_wake_up( struct fd *fd, int type, unsigned int status );
+-extern void fd_reselect_async( struct fd *fd, struct async_queue *queue );
++extern void fd_async_event( struct fd *fd, struct async_queue *queue, struct async *async, int status, int finished );
+ extern obj_handle_t no_fd_ioctl( struct fd *fd, ioctl_code_t code, const async_data_t *async,
+                                  int blocking, const void *data, data_size_t size );
+ extern obj_handle_t default_fd_ioctl( struct fd *fd, ioctl_code_t code, const async_data_t *async,
+                                       int blocking, const void *data, data_size_t size );
+ extern void no_fd_queue_async( struct fd *fd, const async_data_t *data, int type, int count );
+ extern void default_fd_queue_async( struct fd *fd, const async_data_t *data, int type, int count );
+-extern void default_fd_reselect_async( struct fd *fd, struct async_queue *queue );
++extern void default_fd_async_event( struct fd *fd, struct async_queue *queue, struct async *async, int status, int finished );
+ extern void default_fd_cancel_async( struct fd *fd, struct process *process, struct thread *thread, client_ptr_t iosb );
+ extern void no_flush( struct fd *fd, struct event **event );
+ extern void main_loop(void);
+diff -r -u -p a/server/mailslot.c b/server/mailslot.c
+--- a/server/mailslot.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/mailslot.c	2009-12-11 14:11:41.339026606 +0100
+@@ -102,7 +102,7 @@ static const struct fd_ops mailslot_fd_o
+     default_fd_removable,       /* removable */
+     default_fd_ioctl,           /* ioctl */
+     mailslot_queue_async,       /* queue_async */
+-    default_fd_reselect_async,  /* reselect_async */
++    default_fd_async_event,     /* async_event */
+     default_fd_cancel_async     /* cancel_async */
+ };
+ 
+@@ -153,7 +153,7 @@ static const struct fd_ops mail_writer_f
+     default_fd_removable,        /* removable */
+     default_fd_ioctl,            /* ioctl */
+     default_fd_queue_async,      /* queue_async */
+-    default_fd_reselect_async,   /* reselect_async */
++    default_fd_async_event,      /* async_event */
+     default_fd_cancel_async      /* cancel_async */
+ };
+ 
+@@ -204,7 +204,7 @@ static const struct fd_ops mailslot_devi
+     default_fd_removable,           /* removable */
+     default_fd_ioctl,               /* ioctl */
+     default_fd_queue_async,         /* queue_async */
+-    default_fd_reselect_async,      /* reselect_async */
++    default_fd_async_event,         /* async_event */
+     default_fd_cancel_async         /* cancel_async */
+ };
+ 
+diff -r -u -p a/server/named_pipe.c b/server/named_pipe.c
+--- a/server/named_pipe.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/named_pipe.c	2009-12-11 14:11:41.339026606 +0100
+@@ -171,8 +171,8 @@ static const struct fd_ops pipe_server_f
+     default_fd_removable,         /* removable */
+     pipe_server_ioctl,            /* ioctl */
+     default_fd_queue_async,       /* queue_async */
+-    default_fd_reselect_async,    /* reselect_async */
+-    default_fd_cancel_async,      /* cancel_async */
++    default_fd_async_event,       /* async_event */
++    default_fd_cancel_async       /* cancel_async */
+ };
+ 
+ /* client end functions */
+@@ -212,7 +212,7 @@ static const struct fd_ops pipe_client_f
+     default_fd_removable,         /* removable */
+     default_fd_ioctl,             /* ioctl */
+     default_fd_queue_async,       /* queue_async */
+-    default_fd_reselect_async,    /* reselect_async */
++    default_fd_async_event,       /* async_event */
+     default_fd_cancel_async       /* cancel_async */
+ };
+ 
+@@ -257,7 +257,7 @@ static const struct fd_ops named_pipe_de
+     default_fd_removable,             /* removable */
+     named_pipe_device_ioctl,          /* ioctl */
+     default_fd_queue_async,           /* queue_async */
+-    default_fd_reselect_async,        /* reselect_async */
++    default_fd_async_event,           /* async_event */
+     default_fd_cancel_async           /* cancel_async */
+ };
+ 
+diff -r -u -p a/server/process.c b/server/process.c
+--- a/server/process.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/process.c	2009-12-11 14:11:41.342359851 +0100
+@@ -94,7 +94,7 @@ static const struct fd_ops process_fd_op
+     NULL,                        /* removable */
+     NULL,                        /* ioctl */
+     NULL,                        /* queue_async */
+-    NULL,                        /* reselect_async */
++    NULL,                        /* async_event */
+     NULL                         /* cancel async */
+ };
+ 
+diff -r -u -p a/server/queue.c b/server/queue.c
+--- a/server/queue.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/queue.c	2009-12-11 14:11:41.342359851 +0100
+@@ -171,7 +171,7 @@ static const struct fd_ops msg_queue_fd_
+     NULL,                        /* removable */
+     NULL,                        /* ioctl */
+     NULL,                        /* queue_async */
+-    NULL,                        /* reselect_async */
++    NULL,                        /* async_event */
+     NULL                         /* cancel async */
+ };
+ 
+diff -r -u -p a/server/request.c b/server/request.c
+--- a/server/request.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/request.c	2009-12-11 14:11:41.345694074 +0100
+@@ -113,7 +113,7 @@ static const struct fd_ops master_socket
+     NULL,                          /* removable */
+     NULL,                          /* ioctl */
+     NULL,                          /* queue_async */
+-    NULL,                          /* reselect_async */
++    NULL,                          /* async_event */
+     NULL                           /* cancel_async */
+ };
+ 
+diff -r -u -p a/server/serial.c b/server/serial.c
+--- a/server/serial.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/serial.c	2009-12-11 14:11:41.345694074 +0100
+@@ -112,7 +112,7 @@ static const struct fd_ops serial_fd_ops
+     default_fd_removable,         /* removable */
+     default_fd_ioctl,             /* ioctl */
+     serial_queue_async,           /* queue_async */
+-    default_fd_reselect_async,    /* reselect_async */
++    default_fd_async_event,       /* async_event */
+     default_fd_cancel_async       /* cancel_async */
+ };
+ 
+diff -r -u -p a/server/signal.c b/server/signal.c
+--- a/server/signal.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/signal.c	2009-12-11 14:11:41.345694074 +0100
+@@ -90,7 +90,7 @@ static const struct fd_ops handler_fd_op
+     NULL,                     /* removable */
+     NULL,                     /* ioctl */
+     NULL,                     /* queue_async */
+-    NULL,                     /* reselect_async */
++    NULL,                     /* async_event */
+     NULL                      /* cancel_async */
+ };
+ 
+diff -r -u -p a/server/sock.c b/server/sock.c
+--- a/server/sock.c	2009-12-11 14:10:33.000000000 +0100
++++ b/server/sock.c	2009-12-11 14:11:41.345694074 +0100
+@@ -97,7 +97,7 @@ static void sock_poll_event( struct fd *
+ static enum server_fd_type sock_get_fd_type( struct fd *fd );
+ static int sock_removable( struct fd *fd );
+ static void sock_queue_async( struct fd *fd, const async_data_t *data, int type, int count );
+-static void sock_reselect_async( struct fd *fd, struct async_queue *queue );
++static void sock_async_event( struct fd *fd, struct async_queue *queue, struct async *async, int status, int finished );
+ static void sock_cancel_async( struct fd *fd, struct process *process, struct thread *thread, client_ptr_t iosb );
+ 
+ static int sock_get_error( int err );
+@@ -132,7 +132,7 @@ static const struct fd_ops sock_fd_ops =
+     sock_removable,               /* removable */
+     default_fd_ioctl,             /* ioctl */
+     sock_queue_async,             /* queue_async */
+-    sock_reselect_async,          /* reselect_async */
++    sock_async_event,             /* async_event */
+     sock_cancel_async             /* cancel_async */
+ };
+ 
+@@ -542,7 +542,7 @@ static void sock_queue_async( struct fd 
+     if ( pollev ) sock_try_event( sock, pollev );
+ }
+ 
+-static void sock_reselect_async( struct fd *fd, struct async_queue *queue )
++static void sock_async_event( struct fd *fd, struct async_queue *queue, struct async *async, int status, int finished )
+ {
+     struct sock *sock = get_fd_user( fd );
+     int events = sock_reselect( sock );
+diff -r -u -p a/server/thread.c b/server/thread.c
+--- a/server/thread.c	2009-12-11 14:09:05.000000000 +0100
++++ b/server/thread.c	2009-12-11 14:11:41.349026341 +0100
+@@ -158,7 +158,7 @@ static const struct fd_ops thread_fd_ops
+     NULL,                       /* removable */
+     NULL,                       /* ioctl */
+     NULL,                       /* queue_async */
+-    NULL,                       /* reselect_async */
++    NULL,                       /* async_event */
+     NULL                        /* cancel_async */
+ };
+ 
