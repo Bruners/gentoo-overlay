@@ -8,7 +8,7 @@ inherit eutils
 
 DESCRIPTION="BitTorrent Client using libtorrent"
 HOMEPAGE="http://libtorrent.rakshasa.no/"
-SRC_URI="http://libtorrent.rakshasa.no/downloads/${P}.tar.gz"
+SRC_URI="http://karabaja.pondi.hr/packages/rtorrent-mod/rtorrent-0.8.6.tar.gz"
 
 LICENSE="GPL-2"
 SLOT="0"
