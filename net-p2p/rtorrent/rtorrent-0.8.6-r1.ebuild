@@ -13,7 +13,7 @@ SRC_URI="http://libtorrent.rakshasa.no/downloads/${P}.tar.gz"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64 ~arm ~hppa ~ia64 ppc ~ppc64 ~sparc x86 ~x86-fbsd"
-IUSE="daemon debug ipv6 xmlrpc"
+IUSE="daemon debug ipv6 xmlrpc color"
 
 COMMON_DEPEND=">=net-libs/libtorrent-0.12.${PV##*.}
 	>=dev-libs/libsigc++-2.2.2:2
@@ -27,6 +27,7 @@ DEPEND="${COMMON_DEPEND}
 
 src_prepare() {
 	epatch "${FILESDIR}"/${P}-canvas-fix.patch
+	use color && epatch "${FILESDIR}"/rtorrent-mod.patch
 }
 
 src_configure() {
