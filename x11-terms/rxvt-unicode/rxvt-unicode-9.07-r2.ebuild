@@ -13,7 +13,7 @@ SRC_URI="http://dist.schmorp.de/rxvt-unicode/${P}.tar.bz2"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
-IUSE="afterimage iso14755 perl blink truetype xterm-color +vanilla wcwidth"
+IUSE="afterimage iso14755 perl blink truetype xterm-color +vanilla wcwidth hints"
 
 # see bug #115992 for modular x deps
 RDEPEND="x11-libs/libX11
