@@ -231,8 +231,8 @@ src_prepare() {
 	fi
 
 	# 2.6.33 kernel support
-	epatch "${FILESDIR}"/ati-drivers-2.6.33.patch
-	epatch "${FILESDIR}"/ati-drivers-2.6.34.patch
+	#epatch "${FILESDIR}"/ati-drivers-2.6.33.patch
+	#epatch "${FILESDIR}"/ati-drivers-2.6.34.patch
 	# Fix a known compilation error
 	epatch "${FILESDIR}"/ati-drivers-fix_compilation-bug-297322.patch
 
