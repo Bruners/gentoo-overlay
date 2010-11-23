@@ -1,6 +1,74 @@
 # ChangeLog for x11-terms/rxvt-unicode
 # Copyright 1999-2010 Gentoo Foundation; Distributed under the GPL v2
-# $Header: /var/cvsroot/gentoo-x86/x11-terms/rxvt-unicode/ChangeLog,v 1.155 2010/01/29 04:48:10 jer Exp $
+# $Header: /var/cvsroot/gentoo-x86/x11-terms/rxvt-unicode/ChangeLog,v 1.172 2010/11/16 21:38:47 wired Exp $
+
+*rxvt-unicode-9.09 (15 Nov 2010)
+
+  15 Nov 2010; Alex Alexander <wired@gentoo.org> +rxvt-unicode-9.09.ebuild,
+  metadata.xml:
+  version bump, bug #345275
+
+  23 Oct 2010; Mark Loeser <halcy0n@gentoo.org> rxvt-unicode-9.07-r1.ebuild:
+  Stable for ppc64; bug #319711
+
+  27 Aug 2010; Alex Alexander <wired@gentoo.org> rxvt-unicode-9.07.ebuild,
+  rxvt-unicode-9.07-r1.ebuild, rxvt-unicode-9.07-r2.ebuild:
+  fixed wrong dependency, bug #327901
+
+  27 Aug 2010; Jeroen Roovers <jer@gentoo.org> rxvt-unicode-9.07.ebuild,
+  rxvt-unicode-9.07-r1.ebuild, rxvt-unicode-9.07-r2.ebuild:
+  RDEPEND on media-libs/afterimage or x11-wm/afterstep with USE=afterimage
+  by Manuel (bug #327901).
+
+  19 Jun 2010; Raúl Porcel <armin76@gentoo.org>
+  rxvt-unicode-9.07-r1.ebuild:
+  alpha/ia64/sparc stable wrt #319711
+
+*rxvt-unicode-9.07-r2 (31 May 2010)
+
+  31 May 2010; Jeroen Roovers <jer@gentoo.org> +rxvt-unicode-9.07-r2.ebuild,
+  metadata.xml:
+  Make blinking text optional thanks to jussx (bug #321655).
+
+  24 May 2010; Pawel Hajdan jr <phajdan.jr@gentoo.org>
+  rxvt-unicode-9.07-r1.ebuild:
+  x86 stable wrt bug #319711
+
+  24 May 2010; <nixnut@gentoo.org> rxvt-unicode-9.07-r1.ebuild:
+  ppc stable #319711
+
+  20 May 2010; Jeroen Roovers <jer@gentoo.org> rxvt-unicode-9.07-r1.ebuild:
+  Stable for HPPA (bug #319711).
+
+  18 May 2010; Alex Alexander <wired@gentoo.org>
+  rxvt-unicode-9.07-r1.ebuild:
+  amd64 stable, bug #319711
+
+  14 May 2010; Víctor Ostorga <vostorga@gentoo.org> metadata.xml:
+  Removing myself from metadata, because I no longer use this software
+
+  12 Feb 2010; Raúl Porcel <armin76@gentoo.org> rxvt-unicode-9.07.ebuild:
+  alpha/ia64/sparc/x86 stable wrt #303305
+
+  10 Feb 2010; Joseph Jezak <josejx@gentoo.org> rxvt-unicode-9.07.ebuild:
+  Marked ppc64 stable for bug #303305.
+
+  08 Feb 2010; nixnut <nixnut@gentoo.org> rxvt-unicode-9.07.ebuild:
+  ppc stable #303305
+
+  08 Feb 2010; Jeroen Roovers <jer@gentoo.org> rxvt-unicode-9.07.ebuild:
+  Stable for HPPA (bug #303305).
+
+  07 Feb 2010; Markos Chandras <hwoarang@gentoo.org>
+  rxvt-unicode-9.07.ebuild:
+  Stable on amd64 wrt bug #303305
+
+*rxvt-unicode-9.07-r1 (03 Feb 2010)
+
+  03 Feb 2010; Jeroen Roovers <jer@gentoo.org>
+  +files/rxvt-unicode-9.06-font-width.patch, +rxvt-unicode-9.07-r1.ebuild:
+  Add character width patch thanks to Slava Gorbunov (bug #277830). Do not
+  evaluate USE flags in subshell. Die when emake fails.
 
   29 Jan 2010; Jeroen Roovers <jer@gentoo.org>
   +files/rxvt-unicode-9.05_no-MOTIF-WM-INFO.patch:
