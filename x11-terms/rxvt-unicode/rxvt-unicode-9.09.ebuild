@@ -13,7 +13,7 @@ SRC_URI="http://dist.schmorp.de/rxvt-unicode/${P}.tar.bz2"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~hppa ~ia64 ~ppc ~ppc64 ~sparc ~x86 ~x86-fbsd"
-IUSE="256-color afterimage iso14755 perl blink truetype +vanilla wcwidth"
+IUSE="256-color afterimage iso14755 perl blink truetype +vanilla wcwidth hints"
 
 # see bug #115992 for modular x deps
 RDEPEND="x11-libs/libX11
@@ -38,6 +38,9 @@ src_prepare() {
 	# kill the rxvt-unicode terminfo file - #192083
 	sed -i -e "/rxvt-unicode.terminfo/d" doc/Makefile.in ||
 		die "sed failed"
+	
+	# Apply hints patch from http://awesome.naquadah.org/wiki/Urxvt_Hints
+	use hints && epatch "${FILESDIR}"/hints.patch
 
 	use wcwidth && epatch doc/wcwidth.patch
 
