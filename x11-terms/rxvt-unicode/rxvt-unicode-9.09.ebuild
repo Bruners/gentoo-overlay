@@ -69,7 +69,7 @@ src_configure() {
 
 	econf --enable-everything \
 		--disable-pixbuf \
-		--disable-smart-resize
+		--enable-smart-resize
 		$(use_enable truetype xft) \
 		$(use_enable 256-color) \
 		$(use_enable afterimage) \
