@@ -29,6 +29,11 @@ DEPEND="${RDEPEND}
 PDEPEND="branding? ( >=x11-themes/slim-themes-1.2.3a-r3 )"
 
 src_prepare() {
+	# Xinerama patch
+	if use xinerama; then
+		epatch "${FILESDIR}/slim-xinerama.patch"
+	fi
+
 	# respect C[XX]FLAGS, fix crosscompile,
 	# fix linking order for --as-needed"
 	sed -i -e "s:^CXX=.*:CXX=$(tc-getCXX) ${CXXFLAGS}:" \
@@ -56,10 +61,6 @@ src_prepare() {
 	epatch "${FILESDIR}/261359-fix-SIGTERM-freeze.patch"
 	# Gentoo bug 346037
 	epatch "${FILESDIR}/346037-stop_setting_host_for_pam_ck_connector_so.patch"
-	# Xinerama patch
-	if use xinerama; then
-		epatch "${FILESDIR}/slim-xinerama.patch"
-	fi
 }
 
 src_compile() {
