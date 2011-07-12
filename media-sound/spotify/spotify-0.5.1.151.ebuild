@@ -6,8 +6,10 @@ EAPI="3"
 
 inherit eutils
 
+
+
 MY_PN="spotify-client-qt"
-MY_PV="${PV}.g604b4fb"
+MY_PV="${PV}.g7c8c074"
 MY_P="${MY_PN}_${MY_PV}"
 
 DESCRIPTION="A proprietary peer-to-peer music streaming desktop application"
