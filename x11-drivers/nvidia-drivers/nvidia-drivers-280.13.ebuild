@@ -1,6 +1,6 @@
 # Copyright 1999-2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/x11-drivers/nvidia-drivers/nvidia-drivers-270.18.ebuild,v 1.1 2011/01/24 18:13:43 cardoe Exp $
+# $Header: /var/cvsroot/gentoo-x86/x11-drivers/nvidia-drivers/nvidia-drivers-275.21.ebuild,v 1.1 2011/07/27 14:45:17 cardoe Exp $
 
 EAPI="2"
 
@@ -12,9 +12,9 @@ X86_FBSD_NV_PACKAGE="NVIDIA-FreeBSD-x86-${PV}"
 
 DESCRIPTION="NVIDIA X11 driver and GLX libraries"
 HOMEPAGE="http://www.nvidia.com/"
-SRC_URI="x86? ( ftp://download.nvidia.com/XFree86/Linux-x86/${PV}/${X86_NV_PACKAGE}.run )
-	 amd64? ( ftp://download.nvidia.com/XFree86/Linux-x86_64/${PV}/${AMD64_NV_PACKAGE}.run )
-	 x86-fbsd? ( ftp://download.nvidia.com/XFree86/FreeBSD-x86/${PV}/${X86_FBSD_NV_PACKAGE}.tar.gz )"
+SRC_URI="x86? ( http://us.download.nvidia.com/XFree86/Linux-x86/${PV}/${X86_NV_PACKAGE}.run )
+	 amd64? ( http://us.download.nvidia.com/XFree86/Linux-x86_64/${PV}/${AMD64_NV_PACKAGE}.run )
+	 x86-fbsd? ( http://us.download.nvidia.com/XFree86/FreeBSD-x86/${PV}/${X86_FBSD_NV_PACKAGE}.tar.gz )"
 
 LICENSE="NVIDIA"
 SLOT="0"
@@ -32,22 +32,24 @@ DEPEND="${COMMON}
 	kernel_linux? ( virtual/linux-sources )"
 RDEPEND="${COMMON}
 	x11-libs/libXvMC
-	kernel_linux? ( virtual/modutils )
 	acpi? ( sys-power/acpid )"
 PDEPEND=">=x11-libs/libvdpau-0.3-r1
 	gtk? ( media-video/nvidia-settings )"
 
-QA_TEXTRELS_x86="usr/lib/opengl/nvidia/lib/libnvidia-tls.so.${PV}
-	usr/lib/opengl/nvidia/lib/libGL.so.${PV}
-	usr/lib/libnvidia-glcore.so.${PV}
-	usr/lib/opengl/nvidia/extensions/libglx.so.${PV}
-	usr/lib/xorg/modules/drivers/nvidia_drv.so
+QA_TEXTRELS_x86="
+	usr/lib/libOpenCL.so.1.0.0
+	usr/lib/libXvMCNVIDIA.so.${PV}
 	usr/lib/libcuda.so.${PV}
+	usr/lib/libnvcuvid.so.${PV}
 	usr/lib/libnvidia-cfg.so.${PV}
+	usr/lib/libnvidia-compiler.so.${PV}
+	usr/lib/libnvidia-glcore.so.${PV}
 	usr/lib/libnvidia-ml.so.${PV}
 	usr/lib/libvdpau_nvidia.so.${PV}
-	usr/lib/libOpenCL.so.1.0.0
-	usr/lib/libnvidia-compiler.so.${PV}"
+	usr/lib/opengl/nvidia/extensions/libglx.so.${PV}
+	usr/lib/opengl/nvidia/lib/libGL.so.${PV}
+	usr/lib/opengl/nvidia/lib/libnvidia-tls.so.${PV}
+	usr/lib/xorg/modules/drivers/nvidia_drv.so"
 
 QA_TEXTRELS_x86_fbsd="boot/modules/nvidia.ko
 	usr/lib/opengl/nvidia/lib/libGL.so.1
@@ -207,7 +209,7 @@ pkg_setup() {
 		linux-mod_pkg_setup
 		MODULE_NAMES="nvidia(video:${S}/kernel)"
 		BUILD_PARAMS="IGNORE_CC_MISMATCH=yes V=1 SYSSRC=${KV_DIR} \
-		SYSOUT=${KV_OUT_DIR} HOST_CC=$(tc-getBUILD_CC)"
+		SYSOUT=${KV_OUT_DIR} CC=$(tc-getBUILD_CC)"
 		mtrr_check
 		lockdep_check
 	fi
@@ -278,7 +280,6 @@ src_prepare() {
 			-e 's:-Wsign-compare::g' \
 			"${NV_SRC}"/Makefile.kbuild
 
-		# Add support for the 'x86' unified kernel arch in conftest.sh
 		epatch "${FILESDIR}"/256.35-unified-arch.patch
 
 		# If you set this then it's your own fault when stuff breaks :)
