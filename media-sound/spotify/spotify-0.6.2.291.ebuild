@@ -28,6 +28,7 @@ RDEPEND="${RDEPEND}
 	>=x11-libs/qt-webkit-4.5.0
 	>=x11-libs/qt-core-4.5.0
 	>=x11-libs/qt-gui-4.5.0"
+	~dev-libs/openssl-0.9.8
 
 src_unpack() {
 	unpack ${A} ./data.tar.gz
