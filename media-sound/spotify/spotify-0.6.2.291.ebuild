@@ -19,16 +19,22 @@ SRC_URI="amd64? ( ${REPO_URI}/${MY_P}-1_amd64.deb )
 LICENSE="Spotify"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE=""
+IUSE="gnome"
 
 # media-sound/asoundconf left
 DEPEND=""
-RDEPEND="${RDEPEND}
-	>=x11-libs/qt-dbus-4.5.0
-	>=x11-libs/qt-webkit-4.5.0
-	>=x11-libs/qt-core-4.5.0
-	>=x11-libs/qt-gui-4.5.0"
-	~dev-libs/openssl-0.9.8
+RDEPEND="
+   gnome? ( >=gnome-base/gconf-2.12 )
+   >=sys-libs/glibc-2.6
+   >=media-libs/alsa-lib-1.0.14
+   >=x11-libs/qt-core-4.5
+   >=x11-libs/qt-dbus-4.5
+   >=x11-libs/qt-gui-4.5
+   >=x11-libs/qt-webkit-4.5
+   >=sys-devel/gcc-4.0
+   sys-apps/usbutils"
+
+RESTRICT="mirror strip"
 
 src_unpack() {
 	unpack ${A} ./data.tar.gz
